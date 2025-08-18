@@ -1,33 +1,49 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional
+from datetime import datetime
 
-# User Registration Schema
-class UserCreate(BaseModel):
+# User Schemas
+class UserBase(BaseModel):
     email: EmailStr
-    name: str
+    username: str
+
+class UserCreate(UserBase):
     password: str
 
-# User Login Schema
-class UserLogin(BaseModel):
-    email: EmailStr
-    password: str
+class UserUpdate(BaseModel):
+    email: Optional[EmailStr] = None
+    username: Optional[str] = None
+    password: Optional[str] = None
 
-# Profile Schema
-class UserProfileBase(BaseModel):
-    interests: Optional[str] = None
-    about: Optional[str] = None
+class User(UserBase):
+    id: int
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+# UserDetails Schemas
+class UserDetailsBase(BaseModel):
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    phone: Optional[str] = None
     address: Optional[str] = None
+    bio: Optional[str] = None
 
-# Profile Update
-class UserProfileUpdate(UserProfileBase):
+class UserDetailsCreate(UserDetailsBase):
+    user_id: int
+
+class UserDetailsUpdate(UserDetailsBase):
     pass
 
-# Response Schema for User + Profile
-class UserResponse(BaseModel):
+class UserDetails(UserDetailsBase):
     id: int
-    email: EmailStr
-    name: str
-    profile: Optional[UserProfileBase] = None
-
+    user_id: int
+    updated_at: datetime
+    
     class Config:
-        orm_mode = True
+        from_attributes = True
+
+# Combined Schema for User with Details
+class UserWithDetails(User):
+    user_details: Optional[UserDetails] = None

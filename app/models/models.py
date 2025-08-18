@@ -1,27 +1,31 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
-from app.initResources.db import Base
+from sqlalchemy.sql import func
+from initResources.db import Base
 
-# Users table
 class User(Base):
     __tablename__ = "users"
-
+    
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True, nullable=False)
-    name = Column(String, nullable=False)
+    username = Column(String, unique=True, index=True, nullable=False)
     password = Column(String, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Relationship to UserDetails
+    user_details = relationship("UserDetails", back_populates="user", cascade="all, delete-orphan")
 
-    profile = relationship("UserProfile", back_populates="owner", uselist=False)
-
-
-# Extra details linked to Users table
-class UserProfile(Base):
-    __tablename__ = "user_profiles"
-
+class UserDetails(Base):
+    __tablename__ = "user_details"
+    
     id = Column(Integer, primary_key=True, index=True)
-    interests = Column(String, nullable=True)
-    about = Column(String, nullable=True)
+    user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
+    first_name = Column(String, nullable=True)
+    last_name = Column(String, nullable=True)
+    phone = Column(String, nullable=True)
     address = Column(String, nullable=True)
-
-    user_id = Column(Integer, ForeignKey("users.id"))
-    owner = relationship("User", back_populates="profile")
+    bio = Column(String, nullable=True)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    
+    # Relationship to User
+    user = relationship("User", back_populates="user_details")
